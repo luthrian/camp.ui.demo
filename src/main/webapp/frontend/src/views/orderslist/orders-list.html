@@ -1,0 +1,191 @@
+<!--
+  ~ Copyright 2000-2017 Vaadin Ltd.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  ~ use this file except in compliance with the License. You may obtain a copy of
+  ~ the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  ~ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+  ~ License for the specific language governing permissions and limitations under
+  ~ the License.
+  -->
+
+<!-- Dependency resources -->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<!-- Added Web Component dependencies to make Vaadin Designer preview work -->
+<link rel="import" href="../../../bower_components/vaadin-text-field/src/vaadin-text-field.html">
+<link rel="import" href="../../../bower_components/vaadin-button/src/vaadin-button.html">
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../bower_components/vaadin-lumo-styles/badge.html">
+<!-- TODO Needed to show icons in Vaadin Designer preview mode for now, but can be removed soon -->
+<link rel="import" href="../../../bower_components/vaadin-lumo-styles/icons.html">
+
+
+<!-- Defines the orders-list element -->
+<dom-module id="orders-list">
+    <template>
+        <style include="lumo-color lumo-typography lumo-badge view-styles">
+            :host {
+                display: block;
+            }
+
+            #header {
+                display: flex;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                align-items: baseline;
+            }
+
+            /* Subtitle for the header */
+            #header span {
+                display: block;
+                font-size: var(--lumo-font-size-s);
+                font-weight: 400;
+                color: var(--lumo-secondary-text-color);
+                letter-spacing: 0;
+                margin-top: 0.3em;
+                margin-left: auto;
+            }
+
+            .order {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                padding: var(--lumo-space-wide-xl);
+                padding-right: var(--lumo-space-m);
+                box-sizing: border-box;
+                margin-bottom: 8px;
+                background-color: var(--lumo-base-color);
+                box-shadow: 0 0 0 1px var(--lumo-shade-5pct), 0 2px 5px 0 var(--lumo-shade-10pct);
+                border-radius: var(--lumo-border-radius);
+            }
+
+            .order__id {
+                flex: none;
+                align-self: flex-start;
+                margin: 0 1em 0 0;
+                position: relative;
+                cursor: default;
+            }
+
+            .order__businessid {
+                margin: 0 0.5em 0 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .order__date {
+                white-space: nowrap;
+                line-height: var(--lumo-line-height-xs);
+                margin: 0 1em;
+                width: 30%;
+            }
+
+            .order__date h5 {
+                font-size: var(--lumo-font-size-s);
+                font-weight: 400;
+                color: var(--lumo-secondary-text-color);
+                margin: 0;
+            }
+
+            .order__date p {
+                font-size: var(--lumo-font-size-s);
+                margin: 0;
+            }
+
+            .order__edit {
+                align-self: flex-start;
+                flex: none;
+                margin: 0 0 0 auto;
+                width: 5em;
+            }
+
+            .orders__no-matches {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 4em;
+                font-size: 22px;
+                color: var(--lumo-tertiary-text-color);
+            }
+
+            /* Small viewport styles */
+
+            @media (max-width: 700px) {
+                .order {
+                    padding: var(--lumo-space-m);
+                    padding-right: var(--lumo-space-s);
+                    flex-wrap: wrap;
+                }
+
+                .order__date {
+                    order: 1;
+                    margin-left: 3.5em;
+                    margin-top: 0.5em;
+                }
+            }
+
+        </style>
+
+        <div class="view-toolbar">
+            <vaadin-text-field id="search" class="view-toolbar__search-field" autocapitalize=off>
+                <iron-icon icon="lumo:search" slot="prefix"></iron-icon>
+            </vaadin-text-field>
+            <vaadin-button id="newOrder" class="view-toolbar__button" theme="primary">
+                <iron-icon icon="lumo:plus" slot="prefix"></iron-icon>
+                <span>New order</span>
+            </vaadin-button>
+        </div>
+
+        <div class="view-container orders">
+            <h2 id="header"></h2>
+            <template is="dom-if" if="{{!_isEmpty(orders)}}">
+                <template is="dom-repeat" items="[[orders]]">
+                    <div class="order">
+                        <div class="order__id">
+                            <p class="order__id">
+                                [[item.id]]
+                            </p>
+                        </div>
+                        <div class="order__businessid">
+                            <h4 class="order__businessid">[[item.onlyBusinessId]]</h4>
+                        </div>
+                        <div class="order__date">
+                            <p>[[item::date]]</p>
+                        </div>
+                        <vaadin-button on-click="edit" class="order__edit" theme="tertiary">
+                            <iron-icon icon="lumo:edit"></iron-icon><span>Edit</span>
+                        </vaadin-button>
+                        <vaadin-button on-click="delete" class="order__edit" theme="tertiary">
+                            <iron-icon icon="lumo:del"></iron-icon><span>Del</span>
+                        </vaadin-button>
+                    </div>
+                </template>
+            </template>
+
+            <template is="dom-if" if="{{_isEmpty(orders)}}">
+                <div class="orders__no-matches">No matches</div>
+            </template>
+        </div>
+    </template>
+
+    <!-- Polymer boilerplate to register the orders-list element -->
+    <script>
+        class OrderListElement extends Polymer.Element {
+            static get is() {
+                return 'orders-list'
+            }
+
+            _isEmpty(array) {
+                return array.length == 0;
+            }
+        }
+        customElements.define(OrderListElement.is, OrderListElement);
+    </script>
+
+</dom-module>
