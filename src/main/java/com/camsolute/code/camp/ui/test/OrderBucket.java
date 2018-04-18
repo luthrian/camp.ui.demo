@@ -19,32 +19,33 @@ public class OrderBucket {
 	
   private static class SingletonHolder {
 
-   private static boolean loaded = false;
-   private static OrderBucket service;
+		private static boolean loaded = false;
+		private static OrderBucket service;
+		
+		static final OrderBucket INSTANCE = getOrderService();
+		private SingletonHolder() {
+		}
 
-   static final OrderBucket INSTANCE = getOrderService();
-   private SingletonHolder() {
-   }
+		private static OrderBucket getOrderService() {
+			if(!loaded) {
+		    final OrderBucket orderService = new OrderBucket();
+		    OrderList ol = OrderRest.instance().loadList(!Util._IN_PRODUCTION);
+		    for(Order o:ol) {
+		    	o.processes().addAll(OrderRest.instance().loadProcessReferences(o.onlyBusinessId(), !Util._IN_PRODUCTION));
+		    }
+		    if(!ol.isEmpty()) {
+		    	orderService.saveOrderList(ol);
+		    }
+		    loaded = true;
+		    return orderService;
+			} else {
+				return service;
+			}
+		}
+		protected static void needsReload() {
+		   loaded = false;
+		  }
 
-      private static OrderBucket getOrderService() {
-       if(!loaded) {
-          final OrderBucket orderService = new OrderBucket();
-          OrderList ol = OrderRest.instance().loadList(!Util._IN_PRODUCTION);
-          for(Order o:ol) {
-           o.processes().addAll(OrderRest.instance().loadProcessReferences(o.onlyBusinessId(), !Util._IN_PRODUCTION));
-          }
-          if(!ol.isEmpty()) {
-           orderService.saveOrderList(ol);
-          }
-          loaded = true;
-          return orderService;
-       } else {
-         return service;
-       }
-      }
-			protected static void needsReload() {
-       loaded = false;
-      }
   }
 
   private static OrderMap orders = new OrderMap();
